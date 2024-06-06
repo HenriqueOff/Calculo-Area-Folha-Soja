@@ -1,31 +1,66 @@
 #!/bin/bash
 
-# Nome do ambiente
-ENV_NAME="ImagemProcessamento"
-PYTHON_SCRIPT="processamento_imagem.py"
+# Nome do ambiente conda
+ENV_NAME="ImageJ"
 
-# Função para verificar e instalar dependências
-install_dependencies() {
-    conda install -y -n $ENV_NAME -c conda-forge opencv numpy
+# Lista de dependências Conda
+CONDA_DEPENDENCIES=(
+    "python=3.8"
+    "numpy"
+    "opencv"
+)
+
+# Lista de dependências pip (algumas podem ser redundantes com conda)
+PIP_DEPENDENCIES=(
+    "opencv-python"
+)
+
+# Função para verificar se um ambiente conda existe
+env_exists() {
+    conda env list | grep -q "$1"
 }
 
-# Verificar se o ambiente conda já existe
-if conda env list | grep -q "$ENV_NAME"; then
-    echo "Ativando ambiente conda '$ENV_NAME'..."
-    source activate $ENV_NAME
+# Função para verificar se uma dependência conda está instalada
+conda_installed() {
+    conda list | grep -q "^$1"
+}
 
-    echo "Verificando e instalando dependências necessárias..."
-    install_dependencies
+# Função para verificar se uma dependência pip está instalada
+pip_installed() {
+    pip show "$1" &> /dev/null
+}
+
+# Ativa o conda base para garantir que os comandos conda estejam disponíveis
+source $(conda info --base)/etc/profile.d/conda.sh
+
+# Verifica se o ambiente existe
+if env_exists $ENV_NAME; then
+    echo "O ambiente $ENV_NAME existe. Ativando..."
+    conda activate $ENV_NAME
+
+    # Verifica e instala as dependências conda
+    for dep in "${CONDA_DEPENDENCIES[@]}"; do
+        package=$(echo $dep | cut -d'=' -f1)
+        if ! conda_installed $package; then
+            echo "Dependência conda faltando: $dep. Instalando..."
+            conda install -y $dep
+        fi
+    done
+
+    # Verifica e instala as dependências pip
+    for dep in "${PIP_DEPENDENCIES[@]}"; do
+        if ! pip_installed $dep; then
+            echo "Dependência pip faltando: $dep. Instalando..."
+            pip install $dep
+        fi
+    done
 else
-    echo "Criando ambiente conda '$ENV_NAME'..."
-    conda create --name $ENV_NAME -y
-    source activate $ENV_NAME
-
-    echo "Instalando bibliotecas necessárias..."
-    install_dependencies
+    echo "O ambiente $ENV_NAME não existe. Criando..."
+    conda create -n $ENV_NAME -y "${CONDA_DEPENDENCIES[@]}"
+    conda activate $ENV_NAME
+    pip install "${PIP_DEPENDENCIES[@]}"
 fi
 
-# Executar o código Python e mostrar apenas os resultados das áreas
-echo "Executando $PYTHON_SCRIPT..."
-python3 $PYTHON_SCRIPT
+# Executa o script Python
+python imagej.py
 

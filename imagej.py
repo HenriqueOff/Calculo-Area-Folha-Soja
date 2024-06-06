@@ -113,3 +113,21 @@ else:
     # Exibir a área da parte vermelha da imagem
     print("Área da parte vermelha da imagem (depois):", area_vermelha_depois, "pixels")
     print("Área real da parte vermelha da imagem (depois):", area_vermelha_depois_cm2, "cm^2")
+    
+    # Exibir a imagem com a parte verde pintada de vermelho
+    #cv2.imshow('Parte verde Pintada de vermelho (Antes)', parte_verde_pintada_antes)
+    #cv2.imshow('Parte Verde Pintada de Vermelho (Depois)', parte_verde_pintada_depois)
+    #cv2.waitKey(0)# Aguardar a tecla ser pressionada para fechar a janela
+    
+    # Salvar a imagem temporária
+    cv2.imwrite('parte_verde_pintada_antes.jpg', parte_verde_pintada_antes)
+    cv2.imwrite('parte_verde_pintada_depois.jpg', parte_verde_pintada_depois)
+
+    # Abrir as imagens usando o visualizador padrão do sistema
+    import subprocess
+    subprocess.run(['xdg-open', 'parte_verde_pintada_antes.jpg'])
+    subprocess.run(['xdg-open', 'parte_verde_pintada_depois.jpg'])
+
+    
+
+    
